@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدمياطي للموبيليا</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* الإعدادات الأساسية والألوان الجديدة (كحلي داكن وذهبي) */
+        :root {
+            --primary-color: #0f2027; /* كحلي مائل للسواد فخم */
+            --secondary-color: #203a43; /* كحلي متدرج */
+            --gold-color: #D4AF37; /* ذهبي فخم */
+            --bg-color: #F4F6F9; /* خلفية رمادية مزرقة مريحة للعين */
+            --text-dark: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding-bottom: 70px;
+            padding-top: 70px;
+            overflow-x: hidden;
+        }
+
+        /* ---------------- صفحة التحميل (Loader) ---------------- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            color: #fff;
+        }
+
+        .loader-icon-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .loader-icon-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border: 3px solid transparent;
+            border-top-color: var(--gold-color);
+            border-bottom-color: var(--gold-color);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loader-icon-wrapper i {
+            font-size: 2.5rem;
+            color: var(--gold-color);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loader-title {
+            color: var(--gold-color);
+            font-size: clamp(12px, 2.5vw, 22px);
+            white-space: nowrap;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .loader-text {
+            font-size: 1rem;
+            color: #ccc;
+            font-weight: 400;
+        }
+
+        .loading-dots span {
+            animation: blink 1.4s infinite both;
+        }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        .loader-header {
+            position: absolute;
+            top: 40px;
+            z-index: 10;
+        }
+
+        /* ---------------- رأس الموقع (Header) ---------------- */
+        .main-header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            height: 70px;
+            background: rgba(15, 32, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--gold-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand-icon {
+            width: 40px; height: 40px;
+            border: 2px solid var(--gold-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold-color);
+            font-size: 1.2rem;
+            animation: slowPulse 3s infinite;
+        }
+
+        .brand-name {
+            color: var(--gold-color);
+            font-size: clamp(12px, 1.8vw, 20px);
+            white-space: nowrap;
+            font-weight: 800;
+        }
+
+        .menu-toggle {
+            color: var(--gold-color);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .menu-toggle:hover { color: #fff; }
+
+        /* القائمة الجانبية المنسدلة */
+        .side-menu {
+            position: fixed;
+            top: 70px; left: -100%;
+            width: 250px; height: calc(100vh - 70px);
+            background: var(--primary-color);
+            border-right: 2px solid var(--gold-color);
+            transition: left 0.4s ease;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+        .side-menu.active { left: 0; }
+        .side-menu a {
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+        .side-menu a:hover { background: var(--gold-color); color: #000; }
+        .side-menu i { margin-left: 10px; width: 25px; text-align: center; }
+
+        /* ---------------- القسم الرئيسي (الرئيسية) ---------------- */
+        .hero {
+            position: relative;
+            height: calc(100vh - 70px);
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+            padding: 20px;
+            max-width: 900px;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(16px, 3.5vw, 36px);
+            white-space: nowrap;
+            color: var(--gold-color);
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .hero-content p {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #E0E0E0;
+        }
+
+        /* ---------------- العناوين المشتركة ---------------- */
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin: 50px 0 30px;
+            position: relative;
+            font-weight: 800;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px; height: 3px;
+            background: var(--gold-color);
+            margin: 10px auto;
+        }
+
+        /* ---------------- قسم الخدمات ---------------- */
+        .services-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 0 5%;
+            margin-bottom: 50px;
+        }
+
+        .service-card {
+            background: #fff;
+            border: 3px solid var(--secondary-color);
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 1px dashed var(--gold-color);
+            border-radius: 10px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(15, 32, 39, 0.15);
+            border-color: var(--gold-color);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .service-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .service-card p {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        /* ---------------- قسم لماذا نحن ---------------- */
+        .why-us-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 0 5%;
+            margin-bottom: 60px;
+        }
+
+        .why-card {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-bottom: 4px solid var(--gold-color);
+        }
+
+        .why-card i {
+            font-size: 2rem;
+            color: var(--gold-color);
+            margin-bottom: 15px;
+        }
+
+        .why-card h3 { margin-bottom: 10px; font-weight: 700; }
+        .why-card p { font-size: 0.95rem; color: #ddd; font-weight: 600; }
+
+        /* ---------------- قسم تواصل معنا ---------------- */
+        .contact-section {
+            background: #fff;
+            padding: 50px 5%;
+            border-top: 2px solid #eee;
+        }
+
+        .contact-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .contact-info {
+            flex: 1; 
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .contact-map { 
+            flex: 1; 
+            min-width: 300px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .contact-info h3 { 
+            color: var(--primary-color); 
+            margin-bottom: 25px; 
+            font-size: 1.8rem; 
+            font-weight: 800;
+        }
+        
+        .contact-item {
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            margin-bottom: 20px; 
+            font-size: clamp(12px, 2.5vw, 16px);
+            font-weight: 600;
+            white-space: nowrap; 
+        }
+        
+        .contact-item i {
+            color: var(--gold-color); 
+            font-size: 1.3rem; 
+            margin-left: 10px; 
+            width: 25px; 
+            text-align: center;
+        }
+
+        .map-wrapper { width: 100%; max-width: 600px; }
+        .map-wrapper iframe { width: 100%; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .pin-title { 
+            text-align: center; 
+            color: var(--primary-color); 
+            margin-bottom: 15px; 
+            font-weight: 800; 
+            font-size: 1.1rem;
+        }
+
+        /* ---------------- التذييل والتوقيع ---------------- */
+        footer {
+            background: #111;
+            color: #fff;
+            text-align: center;
+            padding: 30px 20px 100px; 
+        }
+
+        .copyright {
+            font-size: clamp(10px, 2vw, 14px);
+            white-space: nowrap;
+            margin-bottom: 25px;
+            color: #aaa;
+            font-weight: 600;
+        }
+
+        .royal-signature {
+            display: inline-block;
+            background: linear-gradient(145deg, #2a2a2a, #111);
+            border: 2px solid var(--gold-color);
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            color: var(--gold-color);
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+            transition: 0.3s;
+        }
+        .royal-signature:hover { background: var(--gold-color); color: #111; transform: scale(1.05); }
+        .royal-signature i { margin-left: 6px; font-size: 1rem;}
+
+        /* ---------------- الشريط السفلي ---------------- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(15, 32, 39, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 2px solid var(--gold-color);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #fff;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 4px; color: var(--gold-color); }
+
+        /* ---------------- أيقونة واتساب العائمة ---------------- */
+        .floating-wa {
+            position: fixed;
+            bottom: 85px; 
+            left: 20px; 
+            background-color: #25D366;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            text-decoration: none;
+            animation: float-wa 2.5s ease-in-out infinite;
+        }
+        
+        .floating-wa:hover {
+            background-color: #128C7E;
+        }
+
+        /* ---------------- الحركات (Animations) ---------------- */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes slowPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); } 50% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); } }
+        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+        
+        @keyframes float-wa {
+            0% { transform: translateY(0); box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); }
+            50% { transform: translateY(-8px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6); }
+            100% { transform: translateY(0); box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-header">
+            <a href="https://wa.me/966547194788" target="_blank" class="royal-signature">
+                تم التصميم بواسطة المهندس / إسلام الشيخ <i class="fab fa-whatsapp"></i>
+            </a>
+        </div>
+        
+        <div class="loader-icon-wrapper">
+            <i class="fas fa-couch"></i>
+        </div>
+        <h2 class="loader-title">الدمياطي للموبيليا يرحب بكم</h2>
+        <p class="loader-text">جاري التحميل <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></p>
+    </div>
+
+    <header class="main-header">
+        <div class="header-brand">
+            <div class="brand-icon">
+                <i class="fas fa-couch"></i>
+            </div>
+            <div class="brand-name">الدمياطي للموبيليا</div>
+        </div>
+        <i class="fas fa-bars menu-toggle" id="menu-btn"></i>
+    </header>
+
+    <div class="side-menu" id="side-menu">
+        <a href="#home" class="menu-link"><i class="fas fa-home"></i> الرئيسية</a>
+        <a href="#services" class="menu-link"><i class="fas fa-tools"></i> الخدمات</a>
+        <a href="#why-us" class="menu-link"><i class="fas fa-star"></i> لماذا نحن</a>
+        <a href="#contact" class="menu-link"><i class="fas fa-phone"></i> تواصل معنا</a>
+    </div>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>الدمياطي للموبيليا</h1>
+            <p>في الدمياطي للموبيليا، نصنع الفخامة من أجود أنواع الأخشاب. متخصصون في تفصيل غرف النوم، الخزائن، والأبواب، والديكورات الخشبية العصرية والكلاسيكية. نجمع بين عراقة الصناعة الدمياطية ودقة التنفيذ لنلبي كافة تطلعاتك بأسعار لا تقبل المنافسة وبجودة تدوم طويلاً.</p>
+        </div>
+    </section>
+
+    <section id="services">
+        <h2 class="section-title">خدماتنا</h2>
+        <div class="services-container">
+            <div class="service-card">
+                <i class="fas fa-door-closed service-icon"></i>
+                <h3>تصميم وتفصيل خزائن</h3>
+                <p>نبتكر لك خزائن عصرية تناسب كافة المساحات وتلبي احتياجاتك التخزينية. نعتمد على خامات عالية الجودة وإكسسوارات متينة لضمان عمر أطول، مع تشطيبات احترافية تضفي لمسة من الرقي والتنظيم على مساحتك بأسعار مميزة وسرعة في الإنجاز.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-box-open service-icon"></i>
+                <h3>تصميم وتفصيل دواليب</h3>
+                <p>نقدم لك دواليب مصممة خصيصاً لتجمع بين الأناقة وسعة التخزين. نهتم بالتقسيم الداخلي العملي مع استخدام أخشاب مقاومة للعوامل المختلفة، لتنظيم أغراضك بشكل مثالي وبألوان تتناسب مع ديكور غرفتك وتلبي كافة تطلعاتك.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-bed service-icon"></i>
+                <h3>تصميم وتفصيل غرف نوم</h3>
+                <p>نصنع لك واحة من الهدوء والراحة من خلال غرف نوم مصممة بأعلى معايير الجودة. نهتم بكل التفاصيل من قوة الخشب إلى جمال التشطيب لنمنحك غرفة نوم فاخرة تعكس ذوقك الرفيع وتضمن لك متانة وفخامة تدوم لسنوات.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-child service-icon"></i>
+                <h3>تصميم وتفصيل غرف أطفال</h3>
+                <p>نصمم غرف أطفال تجمع بين الأمان، المرح، والمتانة. نستخدم طلاء آمن وألوان مبهجة لإنشاء بيئة مثالية لنوم ولعب أطفالك، مع استغلال ذكي للمساحات لتوفير الراحة التامة وإطلاق العنان لمخيلتهم في مكان آمن.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-boxes service-icon"></i>
+                <h3>تصميم وتفصيل غرف تخزين</h3>
+                <p>نقدم لك حلول تخزين ذكية تقضي على الفوضى في منزلك. نصمم أرفف قوية ووحدات تخزين عملية تتحمل الأوزان وتسهل عليك ترتيب الأغراض والوصول إليها بكل سهولة، لنجعل منزلك أكثر تنظيماً واتساعاً.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-border-all service-icon"></i>
+                <h3>تفصيل وتصميم ديكورات جدارية</h3>
+                <p>ارتقِ بجمال جدران منزلك مع ديكورات خشبية وتكسيات جدارية تضفي فخامة وعمقاً بصرياً لمجالسك وصالاتك. تصاميمنا تجمع بين الحداثة والأصالة لتكوين لوحة فنية رائعة تلفت الأنظار وتعكس ذوقك الفريد.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-tv service-icon"></i>
+                <h3>تفصيل ديكور شاشات</h3>
+                <p>اجعل منطقة التلفزيون مركز الأناقة في صالتك. نصمم وننفذ ديكورات شاشات خشبية جذابة مع إضاءات مخفية وأرفف ذكية لإخفاء الأسلاك وإبراز جمال المكان بلمسة سينمائية عصرية تناسب كافة المجالس.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-couch service-icon"></i>
+                <h3>تصميم وتفصيل موبيليا</h3>
+                <p>نجدد منزلك بقطع موبيليا فريدة ومصممة خصيصاً لك. نصنع أثاثاً متيناً وعصرياً يكمل أناقة ديكورك الداخلي ويتحمل الاستخدام اليومي بأيدي أمهر النجارين، لنجمع بين اللمسة الفنية والجانب العملي المريح.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-hammer service-icon"></i>
+                <h3>صيانة وتصليح النجارة</h3>
+                <p>نوفر خدمات صيانة شاملة للأعمال الخشبية. من إصلاح الأبواب والكوالين إلى تجديد الأخشاب التالفة، نعيد لأثاثك متانته ورونقه بسرعة واحترافية عالية وبأقل التكاليف لضمان بقاء ديكوراتك في أبهى صورة.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-tools service-icon"></i>
+                <h3>صيانة وتصليح خزائن</h3>
+                <p>نعالج كافة مشاكل الخزائن والدواليب، بدءاً من الأبواب السحابة والمفصلات وحتى الأرفف المكسورة. نستخدم قطع غيار قوية لضمان استمرارية عمل خزائنك بسلاسة وعودتها لحالتها المثالية لتستمتع براحة البال.</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-home service-icon"></i>
+                <h3>صيانة منزلية للديكور والموبيليا</h3>
+                <p>نحافظ على استثمارك في أثاثك وديكوراتك من خلال خدمات صيانة وتجديد متكاملة. نعالج الخدوش ونجدد الدهانات لتعود قطعك الخشبية كالجديدة تماماً، مع التزام تام بالسرعة والجودة في التنفيذ.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="why-us">
+        <h2 class="section-title">لماذا نحن</h2>
+        <div class="why-us-container">
+            <div class="why-card">
+                <i class="fas fa-star"></i>
+                <h3>جودة أعمالنا</h3>
+                <p>نستخدم أجود أنواع الأخشاب وأحدث التقنيات لنضمن لك قطعاً فنية متينة ومتقنة تعكس أعلى معايير الجودة.</p>
+            </div>
+            <div class="why-card">
+                <i class="fas fa-clock"></i>
+                <h3>التزامنا بالمواعيد</h3>
+                <p>نقدر وقتك الثمين، لذا نحرص على تنفيذ وتسليم كافة المشاريع بدقة متناهية في الوقت المتفق عليه تماماً.</p>
+            </div>
+            <div class="why-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>ضمان أعمالنا</h3>
+                <p>نقدم ضماناً شاملاً على كافة أعمال النجارة والتفصيل لنوفر لك راحة البال وثقة مستدامة في خدماتنا.</p>
+            </div>
+            <div class="why-card">
+                <i class="fas fa-tags"></i>
+                <h3>اسعارنا التنافسية</h3>
+                <p>نوفر لك معادلة مثالية تجمع بين الفخامة والجودة العالية بأسعار مدروسة وتنافسية تناسب ميزانيتك.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <h2 class="section-title">تواصل معنا</h2>
+        <div class="contact-container">
+            <div class="contact-info">
+                <h3>نسعد بتواصلكم</h3>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>رقم التواصل: 0559902966</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>info@domyaty-furniture.com</span>
+                </div>
+            </div>
+            
+            <div class="contact-map">
+                <div class="pin-title">
+                    <i class="fas fa-map-marker-alt" style="color:var(--gold-color); margin-left:8px;"></i>
+                    انطاكية، اشبيلية، الرياض 13226
+                </div>
+                <div class="map-wrapper">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d494149.19339436415!2d47.062798913281235!3d24.78339549999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2eff975de9d025%3A0x58d4643dd8c8d254!2z2KfZhNiv2YXZitin2LfZiiDZhNmE2YXZiNio2YrZhNmK2Kc!5e1!3m2!1sar!2ssa!4v1772835339918!5m2!1sar!2ssa" height="350" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer">
+        <div class="copyright">
+            جميع الحقوق محفوظة لدى/ الدمياطي للموبيليا 2027
+        </div>
+        <a href="https://wa.me/966547194788" target="_blank" class="royal-signature">
+            تم التصميم بواسطة المهندس / إسلام الشيخ <i class="fab fa-whatsapp"></i>
+        </a>
+    </footer>
+
+    <nav class="bottom-nav">
+        <a href="#home" class="nav-item">
+            <i class="fas fa-home"></i>
+            الرئيسية
+        </a>
+        <a href="#services" class="nav-item">
+            <i class="fas fa-tools"></i>
+            الخدمات
+        </a>
+        <a href="#why-us" class="nav-item">
+            <i class="fas fa-star"></i>
+            لماذا نحن
+        </a>
+        <a href="#contact" class="nav-item">
+            <i class="fas fa-phone"></i>
+            تواصل معنا
+        </a>
+    </nav>
+
+    <a href="https://wa.me/966559902966" class="floating-wa" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script>
+        // إخفاء صفحة التحميل بعد 3 ثواني
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var loader = document.getElementById('loader');
+                loader.style.opacity = '0';
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 500); 
+            }, 3000);
+        });
+
+        // تشغيل القائمة الجانبية (Header Menu)
+        const menuBtn = document.getElementById('menu-btn');
+        const sideMenu = document.getElementById('side-menu');
+        const menuLinks = document.querySelectorAll('.menu-link');
+
+        menuBtn.addEventListener('click', function() {
+            sideMenu.classList.toggle('active');
+            if (sideMenu.classList.contains('active')) {
+                menuBtn.classList.remove('fa-bars');
+                menuBtn.classList.add('fa-times');
+            } else {
+                menuBtn.classList.remove('fa-times');
+                menuBtn.classList.add('fa-bars');
+            }
+        });
+
+        // إغلاق القائمة عند الضغط على أي رابط
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                sideMenu.classList.remove('active');
+                menuBtn.classList.remove('fa-times');
+                menuBtn.classList.add('fa-bars');
+            });
+        });
+    </script>
+</body>
+</html>
